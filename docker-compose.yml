@@ -1,9 +1,4 @@
-version: '3.8'
-
 services:
-
-# 1. PostgreSQL Database Service (Official Image)
-
   db:
     image: postgres:16-alpine 
     container_name: salesync_postgres_db
@@ -21,14 +16,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-      
-
-# 2. Spring Boot Backend Service (salesync API)
 
   backend:
     container_name: salesync_backend
     build: 
-      context: .
+      context: .           
       dockerfile: infra/spring-boot/Dockerfile
     restart: always
     ports:
@@ -41,9 +33,6 @@ services:
       db:
         condition: service_healthy
 
-
-# 3. Next.js Frontend Service (salesync Client)
-
   frontend:
     container_name: salesync_frontend
     build:
@@ -54,6 +43,11 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://backend:8080
+    volumes:
+      # Mount source code for hot reload
+      - ./code/frontend:/app
+      # Don't override node_modules from container
+      - /app/node_modules
     depends_on:
       backend:
         condition: service_started
